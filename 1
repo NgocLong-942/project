@@ -1,0 +1,440 @@
+from tkinter import *
+from tkinter import ttk
+from database import Database
+from tkinter import messagebox
+import login
+from tkcalendar import *
+# import datetime
+import csv
+from tkinter import filedialog
+#
+db = Database("1.db")
+
+class InstructorControls:
+    def __init__(self, root):
+        self.root = root
+        #
+        self.search_query = StringVar()
+        #
+        self.Station = StringVar()
+        self.Shift = StringVar()
+        self.Issue = StringVar()
+        self.Date = StringVar()
+        self.Line = StringVar()
+        self.StartTime = StringVar()
+        self.EndTime = StringVar()
+        self.LoseTime = StringVar()
+        self.Action = StringVar()
+        self.DRI = StringVar()
+        self.Remark = StringVar()
+        self.Project = StringVar()
+
+        #
+        self.instructorControlsFrame()
+        self.instructorFrameButtons()
+        self.tableOutputFrame()
+
+    # def calculate_lose_time(self):
+    #     try:
+    #         start_time = datetime.datetime.strptime(self.StartTime.get(), "%H:%M")
+    #         end_time = datetime.datetime.strptime(self.EndTime.get(), "%H:%M")
+    #         lose_time = end_time - start_time
+    #         self.LoseTime.set(str(lose_time))
+    #     except ValueError:
+    #         messagebox.showerror("Error", "Please enter valid times in HH:MM format!")
+    def instructorControlsFrame(self):
+        #
+        self.entriesFrame = Frame(self.root, bg="#5856a0")
+        self.entriesFrame.pack(side=TOP, fill=X)
+        self.instructor_frame_title = Label(self.entriesFrame, text="Report Control Panel",
+                                            font=("Goudy old style", 35),
+                                            bg="#5856a0",
+                                            fg="white")
+        self.instructor_frame_title.grid(row=0, columnspan=2, padx=10, pady=20, sticky="w")
+
+        #
+        self.labelStation = Label(self.entriesFrame, text="Station", font=("Times New Roman", 16, "bold"),
+                                bg="#5856a0",
+                                fg="white")
+        self.labelStation.grid(row=1, column=0, padx=10, pady=5, sticky="w")
+        self.comboStation = ttk.Combobox(self.entriesFrame, textvariable=self.Station, font=("Times New Roman", 15),
+                                        width=28,
+                                        state="readonly")
+        self.comboStation['values'] = ("1. Input", "2. PCBA Board Test", "3. PCBA WIFI Test",
+                                       "4. Glue Point", "5. System 1 Test", "6. S2 & NFT Test",
+                                       "7. FW Test", "8. Final Test", "9. Box Folding", "10. AOI" , "11. Weighing"
+                                       )
+        self.comboStation.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+
+        #
+        self.labelShift = Label(self.entriesFrame, text="Shift", font=("Times New Roman", 16, "bold"), bg="#5856a0",
+                                fg="white")
+        self.labelShift.grid(row=1, column=2, padx=10, pady=5, sticky="w")
+        self.comboShift = ttk.Combobox(self.entriesFrame, textvariable=self.Shift, font=("Times New Roman", 15),
+                                        width=28,
+                                        state="readonly")
+        self.comboShift['values'] = ("Day", "Night")
+        self.comboShift.grid(row=1, column=3, padx=10, pady=5, sticky="w")
+
+        #
+        self.labelProj = Label(self.entriesFrame, text="Project", font=("Times New Roman", 16, "bold"), bg="#5856a0",
+                                fg="white")
+        self.labelProj.grid(row=2, column=0, padx=10, pady=5, sticky="w")
+        self.comboProj = ttk.Combobox(self.entriesFrame, textvariable=self.Project, font=("Times New Roman", 15),
+                                        width=28,
+                                        state="readonly")
+        self.comboProj['values'] = ("DIW377", "R650", "EZ1K _48", "Lightsaber_48", "Lightsaber_8", "EZ1K _8",
+                                    "Revlon 2/4", "Revlon 1/3", "Somerset Infra")
+        self.comboProj.grid(row=2, column=1, padx=10, pady=5, sticky="w")
+
+        #
+        self.labelLine = Label(self.entriesFrame, text="Line", font=("Times New Roman", 16, "bold"), bg="#5856a0",
+                                 fg="white")
+        self.labelLine.grid(row=2, column=2, padx=10, pady=5, sticky="w")
+        self.comboLine = ttk.Combobox(self.entriesFrame, textvariable=self.Line, font=("Times New Roman", 15),
+                                        width=28,
+                                        state="readonly")
+        self.comboLine['values'] = ("4A", "4B", "4C", "4D")
+        self.comboLine.grid(row=2, column=3, padx=10, pady=5, sticky="w")
+
+        #
+        self.labelDate = Label(self.entriesFrame, text="Date", font=("Times New Roman", 16, "bold"),
+                              bg="#5856a0",
+                              fg="white")
+        self.labelDate.grid(row=3, column=0, padx=10, pady=5, sticky="w")
+        self.entryDate = DateEntry(self.entriesFrame, setmode='day', date_pattern='dd/mm/yyyy', textvariable=self.Date,
+                                  font=("Times New Roman", 12), width=35)
+        self.entryDate.grid(row=3, column=1, padx=10, pady=5, sticky="w")
+
+        #
+        self.labelStartTime = Label(self.entriesFrame, text="StartTime", font=("Times New Roman", 16, "bold"),
+                                bg="#5856a0",
+                                fg="white")
+        self.labelStartTime.grid(row=4, column=0, padx=10, pady=5, sticky="w")
+        self.txtStartTime = Entry(self.entriesFrame, textvariable=self.StartTime, font=("Times New Roman", 15), width=30)
+        self.txtStartTime.grid(row=4, column=1, padx=10, pady=5, sticky="w")
+
+        #
+        self.labelEndTime = Label(self.entriesFrame, text="EndTime", font=("Times New Roman", 16, "bold"),
+                                bg="#5856a0",
+                                fg="white")
+        self.labelEndTime.grid(row=5, column=0, padx=10, pady=5, sticky="w")
+        self.txtEndTime = Entry(self.entriesFrame, textvariable=self.EndTime, font=("Times New Roman", 15), width=30)
+        self.txtEndTime.grid(row=5, column=1, padx=10, pady=5, sticky="w")
+
+        #
+        self.labelLoseTime = Label(self.entriesFrame, text="LoseTime", font=("Times New Roman", 16, "bold"),
+                                bg="#5856a0",
+                                fg="white")
+        self.labelLoseTime.grid(row=6, column=0, padx=10, pady=5, sticky="w")
+        self.txtLoseTime = Entry(self.entriesFrame, textvariable=self.LoseTime, font=("Times New Roman", 15), width=30)
+        self.txtLoseTime.grid(row=6, column=1, padx=10, pady=5, sticky="w")
+
+        #
+        self.labelIssue = Label(self.entriesFrame, text="Issue", font=("Times New Roman", 16, "bold"), bg="#5856a0",
+                                fg="white")
+        self.labelIssue.grid(row=3, column=2, padx=10, pady=5, sticky="w")
+        self.txtIssue = Entry(self.entriesFrame, textvariable=self.Issue, font=("Times New Roman", 15), width=30)
+        self.txtIssue.grid(row=3, column=3, padx=10, pady=5, sticky="w")
+        #
+        self.labelAction = Label(self.entriesFrame, text="Action", font=("Times New Roman", 16, "bold"),
+                                bg="#5856a0",
+                                fg="white")
+        self.labelAction.grid(row=4, column=2, padx=10, pady=5, sticky="w")
+        self.txtAction = Entry(self.entriesFrame, textvariable=self.Action, font=("Times New Roman", 15), width=30)
+        self.txtAction.grid(row=4, column=3, padx=10, pady=5, sticky="w")
+
+        #
+        self.labelDRI = Label(self.entriesFrame, text="DRI", font=("Times New Roman", 16, "bold"),
+                                bg="#5856a0",
+                                fg="white")
+        self.labelDRI.grid(row=5, column=2, padx=10, pady=5, sticky="w")
+        self.txtDRI = Entry(self.entriesFrame, textvariable=self.DRI, font=("Times New Roman", 15), width=30)
+        self.txtDRI.grid(row=5, column=3, padx=10, pady=5, sticky="w")
+        #
+        self.labelRemark = Label(self.entriesFrame, text="Remark", font=("Times New Roman", 16, "bold"),
+                                bg="#5856a0",
+                                fg="white")
+        self.labelRemark.grid(row=6, column=2, padx=10, pady=5, sticky="w")
+        self.txtRemark = Entry(self.entriesFrame, textvariable=self.Remark, font=("Times New Roman", 15), width=30)
+        self.txtRemark.grid(row=6, column=3, padx=10, pady=5, sticky="w")
+        #
+        self.labelSearch = Label(self.entriesFrame, text="Search", font=("Times New Roman", 16, "bold"), bg="#5856a0", fg="white")
+        self.labelSearch.grid(row=1, column=5, padx=10, pady=5, sticky="w")
+        self.entrySearch = Entry(self.entriesFrame, textvariable=self.search_query, font=("Times New Roman", 15), width=30)
+        self.entrySearch.grid(row=1, column=6, padx=10, pady=5, sticky="w")
+
+        # Bind the search entry to the search function
+        self.entrySearch.bind("<KeyRelease>", self.searchReports)
+        
+    def searchReports(self, event):
+        query = self.search_query.get().lower()
+        self.out.delete(*self.out.get_children())  # Clear existing items in the table
+        for row in db.viewReport():
+            if any(query in str(item).lower() for item in row):  # Check if query is in any item of the row
+                self.out.insert("", END, values=row)    
+                
+    def getData(self, event):
+        try:
+            self.selectedRow = self.out.focus()
+            self.selectedData = self.out.item(self.selectedRow)
+            self.chosenRow = self.selectedData["values"]
+            self.Station.set(self.chosenRow[1])
+            self.Project.set(self.chosenRow[12])
+            self.Shift.set(self.chosenRow[2])
+            self.Date.set(self.chosenRow[4])
+            self.Line.set(self.chosenRow[5])
+            self.StartTime.set(self.chosenRow[6])
+            self.EndTime.set(self.chosenRow[7])
+            self.LoseTime.set(self.chosenRow[8])
+            self.Issue.set(self.chosenRow[3])
+            self.Action.set(self.chosenRow[9])
+            self.DRI.set(self.chosenRow[10])
+            self.Remark.set(self.chosenRow[11])
+        except IndexError as error:
+            pass
+    """CTA Methods"""
+    #
+    def insReport(self):
+        if(self.comboStation.get() == ""
+                or self.comboProj.get() == ""
+                or self.comboShift.get() == ""
+                or self.txtIssue.get() == ""
+                or self.entryDate.get() == ""
+                or self.txtStartTime.get() == ""
+                or self.comboLine.get() == ""
+                or self.txtEndTime.get() == ""
+                or self.txtLoseTime.get() == ""
+                or self.txtAction.get() == ""
+                or self.txtDRI.get() == ""
+                or self.txtRemark.get() == ""):
+            messagebox.showerror("Error!", "Please fill all the fields!")
+            return
+
+        db.insertReport(self.comboStation.get(),
+                        self.comboShift.get(),
+                        self.txtIssue.get(),
+                        self.entryDate.get(),
+                        self.comboLine.get(),
+                        self.txtStartTime.get(),
+                        self.txtEndTime.get(),
+                        self.LoseTime.get(),
+                        self.txtAction.get(),
+                        self.txtDRI.get(),
+                        self.txtRemark.get(),
+                        self.comboProj.get(),
+                        )
+        messagebox.showinfo("Success!", "Record Successfully Insertered!")
+        self.resetForm()
+        self.viewReports()
+
+    #
+    def updReport(self):
+        if (self.comboStation.get() == ""
+                or self.comboProj.get() == ""
+                or self.comboShift.get() == ""
+                or self.entryDate.get() == ""
+                or self.comboLine.get() == ""
+                or self.txtStartTime.get() == ""
+                or self.txtEndTime.get() == ""
+                or self.txtLoseTime.get() == ""
+                or self.txtIssue.get() == ""
+                or self.txtAction.get() == ""
+                or self.txtDRI.get() == ""
+                or self.txtRemark.get() == ""
+                ):
+            messagebox.showerror("Error!", "Choose a Report to Update Details!")
+            return
+        try:
+            db.editReport(self.chosenRow[0],
+                          self.comboStation.get(),
+                          self.comboProj.get(),
+                          self.comboShift.get(),
+                          self.entryDate.get(),
+                          self.comboLine.get(),
+                          self.txtStartTime.get(),
+                          self.txtEndTime.get(),
+                          self.LoseTime.get(),
+                          self.txtIssue.get(),
+                          self.txtAction.get(),
+                          self.txtDRI.get(),
+                          self.txtRemark.get(),
+                          )
+            messagebox.showinfo("Success!", "Record Successfully Updated!")
+            self.resetForm()
+            self.viewReports()
+        except AttributeError as error:
+            messagebox.showerror("Error!", "Choose an existing Report to Update Details")
+
+    #
+    def viewReports(self):
+        self.out.delete(*self.out.get_children())
+        for row in db.viewReport():
+            self.out.insert("", END, values=row)
+            
+    def resetForm(self):
+        self.Station.set("")
+        self.Project.set("")
+        self.Shift.set("")
+        self.Date.set("")
+        self.Line.set("")
+        self.StartTime.set("")
+        self.EndTime.set("")
+        self.LoseTime.set("")
+        self.Issue.set("")
+        self.Action.set("")
+        self.DRI.set("")
+        self.Remark.set("")
+    def dltReport(self):
+        try:
+            db.removeReport(self.chosenRow[0])
+            self.resetForm()
+            self.viewReports()
+        except AttributeError as error:
+            messagebox.showerror("Error!", "Please Choose an Report Record to Remove!")
+    #
+    def exportReports(self):
+        file_path = filedialog.asksaveasfilename(defaultextension=".csv",
+                                                 filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
+        if file_path:
+            try:
+                with open(file_path, mode='w', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow(
+                        ["Index", "Station", "Project", "Shift","Date", "Line", "StartTime", "EndTime", "LoseTime",
+                          "Issue", "Action", "DRI", "Remark"])
+                    for row in db.viewReport():
+                        writer.writerow(row)
+                messagebox.showinfo("Success!", "Reports successfully exported!")
+            except Exception as e:
+                messagebox.showerror("Error!", f"Failed to export reports. {e}")
+    def logOut(self):
+        self.entriesFrame.destroy()
+        self.buttonsFrame.destroy()
+        self.tableFrame.destroy()
+        login.Login(self.root)
+
+    #
+    def instructorFrameButtons(self):
+        #
+        self.buttonsFrame = Frame(self.entriesFrame, bg="#5856a0")
+        self.buttonsFrame.grid(row=9, column=1, padx=10, pady=10, sticky="w", columnspan=8)
+
+        #
+        self.btnAdd = Button(self.buttonsFrame, command=self.insReport, text="Insert Report", bd=0, cursor="hand2",
+                             bg="#EADDF7",
+                             fg="#5856a0", width=15, font=("Impact", 15))
+        self.btnAdd.grid(row=0, column=0, padx=10)
+
+        #
+        self.btnUpdate = Button(self.buttonsFrame, command=self.updReport, text="Update Report", bd=0,
+                                cursor="hand2",
+                                bg="#EADDF7",
+                                fg="#5856a0", width=15, font=("Impact", 15))
+        self.btnUpdate.grid(row=0, column=1, padx=10)
+
+        #
+        self.btnReset = Button(self.buttonsFrame, command=self.resetForm, text="Reset Form", bd=0, cursor="hand2",
+                               bg="#EADDF7", fg="#5856a0", width=10, font=("Impact", 15))
+        self.btnReset.grid(row=0, column=3, padx=10)
+
+        #
+        self.btnView = Button(self.buttonsFrame, command=self.viewReports, text="View Report List", bd=0,
+                              cursor="hand2",
+                              bg="#EADDF7",
+                              fg="#5856a0", width=15, font=("Impact", 15))
+        self.btnView.grid(row=0, column=2, padx=10)
+
+
+        self.btnDlt = Button(self.buttonsFrame, command=self.dltReport, text="Remove Report", bd=0, cursor="hand2",
+                              bg="#EADDF7",
+                              fg="#5856a0", width=15, font=("Impact", 15))
+        self.btnDlt.grid(row=0, column=4, padx=10)
+        #
+        self.btnExport = Button(self.buttonsFrame, command=self.exportReports, text="Export", bd=0, cursor="hand2",
+                              bg="#EADDF7",
+                              fg="#5856a0", width=15, font=("Impact", 15))
+        self.btnExport.grid(row=0, column=5, padx=10)
+        #
+        # self.btnSearch = Button(self.buttonsFrame, command=self.searchReports, text="Search", bd=0, cursor="hand2",
+        #                     bg="#EADDF7", fg="#5856a0", width=15, font=("Impact", 15))
+        # self.btnSearch.grid(row=0, column=6, padx=10)
+        #
+        self.btnLogOut = Button(self.entriesFrame, command=self.logOut, text="Log Out", bd=0, cursor="hand2",
+                                bg="#EADDF7",
+                                fg="#5856a0", width=15, font=("Impact", 15))
+        self.btnLogOut.grid(row=0, column=9, padx=20, sticky="e")
+
+    def tableOutputFrame(self):
+        self.tableFrame = Frame(self.root, bg="#DADDE6")
+        self.tableFrame.place(x=0, y=390, width=1600, height=560)
+
+        self.yScroll = Scrollbar(self.tableFrame, orient="vertical")
+        self.yScroll.pack(side=RIGHT, fill=Y)
+
+        self.xScroll = Scrollbar(self.tableFrame, orient="horizontal")
+        self.xScroll.pack(side=BOTTOM, fill=X)
+
+        self.style = ttk.Style()
+        self.style.configure("mystyle.Treeview", font=('Calibri', 12), rowheight=70)
+        self.style.configure("mystyle.Treeview.Heading", font=('Times New Roman', 14, "bold"), sticky="w")
+
+        self.out = ttk.Treeview(self.tableFrame, yscrollcommand=self.yScroll.set, xscrollcommand=self.xScroll.set,
+                                columns=(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13), style="mystyle.Treeview")
+
+        self.out.heading("1", text="Index", command=lambda: self.sort_column("1", False))
+        self.out.column("1", width=5)
+        self.out.heading("2", text="Station", command=lambda: self.sort_column("2", False))
+        self.out.column("2", width=50)
+        self.out.heading("3", text="Shift", command=lambda: self.sort_column("3", False))
+        self.out.column("3", width=5)
+        self.out.heading("5", text="Date", command=lambda: self.sort_column("5", False))
+        self.out.column("5", width=10)
+        self.out.heading("6", text="Line", command=lambda: self.sort_column("6", False))
+        self.out.column("6", width=10)
+        self.out.heading("7", text="StartTime", command=lambda: self.sort_column("7", False))
+        self.out.column("7", width=10)
+        self.out.heading("8", text="EndTime", command=lambda: self.sort_column("8", False))
+        self.out.column("8", width=10)
+        self.out.heading("9", text="LoseTime", command=lambda: self.sort_column("9", False))
+        self.out.column("9", width=10)
+        self.out.heading("4", text="Issue", command=lambda: self.sort_column("4", False))
+        self.out.column("4", width=50)
+        self.out.heading("10", text="Action", command=lambda: self.sort_column("10", False))
+        self.out.column("10", width=50)
+        self.out.heading("11", text="DRI", command=lambda: self.sort_column("11", False))
+        self.out.column("11", width=10)
+        self.out.heading("12", text="Remark", command=lambda: self.sort_column("12", False))
+        self.out.column("12", width=30)
+        self.out.heading("13", text="Project", command=lambda: self.sort_column("13", False))
+        self.out.column("13", width=50)
+
+        self.out['show'] = 'headings'
+        self.out.bind("<ButtonRelease-1>", self.getData)
+        self.out.pack(fill=BOTH, expand=1)
+
+        self.yScroll.config(command=self.out.yview)
+        self.xScroll.config(command=self.out.xview)
+
+    def sort_column(self, col, reverse):
+        try:
+            # Nếu cột là "Index" hoặc "Station", chuyển đổi giá trị thành số
+            if col in ["1", "station_column_index"]:  # Thay "station_column_index" bằng chỉ số của cột "Station"
+                l = [(int(self.out.set(k, col).strip('.')), k) for k in self.out.get_children('')]
+            else:
+                l = [(self.out.set(k, col), k) for k in self.out.get_children('')]
+            
+            # Sắp xếp các hàng theo giá trị và chiều sắp xếp
+            l.sort(reverse=reverse)
+            
+            for index, (_, k) in enumerate(l):
+                self.out.move(k, '', index)
+
+            # Đổi chiều sắp xếp
+            self.out.heading(col, command=lambda: self.sort_column(col, not reverse))
+        
+        except ValueError as e:
+            messagebox.showerror("Error", f"Sorting failed: {e}")
+
+    
+
